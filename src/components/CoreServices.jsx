@@ -6,8 +6,6 @@ import {
   TbPlane,
   TbFileCheck,
   TbBuildingWarehouse,
-  TbPackage,
-  TbDeviceAnalytics,
 } from "react-icons/tb";
 import Button from "./Button";
 import { BsArrowRight } from "react-icons/bs";
@@ -16,25 +14,11 @@ gsap.registerPlugin(ScrollTrigger);
 
 const services = [
   {
-    icon: TbTruckDelivery,
-    title: "Supply Chain Management",
-    description:
-      "End-to-end logistics solutions optimized for your business growth",
-    color: "#3B82F6",
-  },
-  {
     icon: TbPlane,
     title: "International Freight Forwarding",
     description:
-      "Air, ocean, and multimodal transport connecting 100+ countries",
-    color: "#10B981",
-  },
-  {
-    icon: TbFileCheck,
-    title: "Customs Brokerage",
-    description:
-      "Expert clearance services ensuring fast, compliant documentation",
-    color: "#F59E0B",
+      "Air, ocean, and multimodal transport connecting 100+ countries worldwide",
+    color: "#3B82F6",
   },
   {
     icon: TbBuildingWarehouse,
@@ -44,18 +28,18 @@ const services = [
     color: "#8B5CF6",
   },
   {
-    icon: TbPackage,
-    title: "Project Cargo Handling",
+    icon: TbFileCheck,
+    title: "Customs Brokerage",
     description:
-      "Specialized solutions for oversized and complex shipments",
-    color: "#EF4444",
+      "Expert clearance services ensuring fast, compliant documentation",
+    color: "#F59E0B",
   },
   {
-    icon: TbDeviceAnalytics,
-    title: "Technology-Driven Tracking",
+    icon: TbTruckDelivery,
+    title: "Supply Chain Management",
     description:
-      "Real-time visibility from origin to final destination",
-    color: "#06B6D4",
+      "End-to-end logistics solutions optimized for your business growth",
+    color: "#10B981",
   },
 ];
 
@@ -404,7 +388,7 @@ const CoreServices = () => {
         </div>
 
         {/* Services Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {services.map((service, index) => (
             <ServiceCard key={index} service={service} index={index} />
           ))}
