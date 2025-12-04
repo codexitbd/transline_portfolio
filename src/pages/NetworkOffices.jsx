@@ -1,6 +1,5 @@
 import React from "react";
-import NetworkHero from "../components/network/NetworkHero";
-import GlobalPresence from "../components/network/GlobalPresence";
+import PageHeader from "../components/PageHeader";
 import OfficeLocations from "../components/network/OfficeLocations";
 import RegionalCoverage from "../components/network/RegionalCoverage";
 import PartnerNetwork from "../components/network/PartnerNetwork";
@@ -12,8 +11,12 @@ import GlobalNetworkMap from "../components/GlobalNetworkMap";
 const NetworkOffices = () => {
   return (
     <main className="overflow-hidden">
-      {/* Hero Section */}
-      <NetworkHero />
+      {/* Page Header */}
+      <PageHeader
+        title="Network & Offices"
+        subtitle="Our global network spans across continents, connecting you to over 100 countries through trusted partnerships and strategic office locations."
+        backgroundImage="https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=2072&auto=format&fit=crop"
+      />
 
       {/* Global Presence Map */}
       <GlobalNetworkMap />

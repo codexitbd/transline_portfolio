@@ -22,7 +22,7 @@ const navItems = [
   { name: "Services", path: "/services", icon: TbSettings },
   { name: "Network", path: "/network-offices", icon: TbWorld },
   { name: "News", path: "/news-and-insights", icon: TbNews },
-  { name: "Career", path: "/career", icon: TbBriefcase },
+  // { name: "Career", path: "/career", icon: TbBriefcase },
 ];
 
 const NavBar = () => {
