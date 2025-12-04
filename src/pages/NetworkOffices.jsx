@@ -7,6 +7,7 @@ import PartnerNetwork from "../components/network/PartnerNetwork";
 import ShippingPartners from "../components/network/ShippingPartners";
 import AirlinePartners from "../components/network/AirlinePartners";
 import NetworkBenefits from "../components/network/NetworkBenefits";
+import GlobalNetworkMap from "../components/GlobalNetworkMap";
 
 const NetworkOffices = () => {
   return (
@@ -15,7 +16,7 @@ const NetworkOffices = () => {
       <NetworkHero />
 
       {/* Global Presence Map */}
-      <GlobalPresence />
+      <GlobalNetworkMap />
 
       {/* Office Locations */}
       <OfficeLocations />

@@ -1,137 +1,113 @@
-import React, { useEffect, useRef, useState, memo } from "react";
+import React, { useEffect, useRef, useState, useCallback } from "react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import {
-  ComposableMap,
-  Geographies,
-  Geography,
-  Marker,
-  Line,
-} from "react-simple-maps";
+import { TbMapPin, TbAnchor, TbUsers, TbWorld } from "react-icons/tb";
+import WorldMapSVG from "../assets/world.svg?react";
 
 gsap.registerPlugin(ScrollTrigger);
 
-const geoUrl = "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json";
-
+// Define regions with their countries and data
 const regions = [
   {
     id: "north-america",
     name: "North America",
-    coordinates: [-100, 45],
-    countries: ["USA", "CAN", "MEX"],
+    countries: ["US", "CA", "MX"],
     capabilities: ["Major Port Access", "Cross-border Logistics", "E-commerce Fulfillment"],
     ports: 12,
     partners: 45,
     color: "#3B82F6",
+    position: { x: 180, y: 230 },
   },
   {
     id: "south-america",
     name: "South America",
-    coordinates: [-60, -15],
-    countries: ["BRA", "ARG", "CHL", "COL", "PER"],
+    countries: ["BR", "AR", "CL", "CO", "PE", "VE", "EC", "BO", "PY", "UY", "GY", "SR"],
     capabilities: ["Agricultural Exports", "Mining Logistics", "Coastal Shipping"],
     ports: 8,
     partners: 28,
     color: "#10B981",
+    position: { x: 290, y: 450 },
   },
   {
     id: "europe",
     name: "Europe",
-    coordinates: [10, 50],
-    countries: ["DEU", "FRA", "GBR", "ITA", "ESP", "NLD", "POL"],
+    countries: ["GB", "DE", "FR", "IT", "ES", "NL", "BE", "PT", "PL", "SE", "NO", "FI", "DK", "AT", "CH", "IE", "GR", "CZ", "RO", "HU", "UA", "BY", "RS", "HR", "SK", "BG"],
     capabilities: ["EU Trade Compliance", "Rail Freight Network", "Cold Chain Solutions"],
     ports: 18,
     partners: 67,
     color: "#8B5CF6",
+    position: { x: 505, y: 175 },
   },
   {
     id: "africa",
     name: "Africa",
-    coordinates: [20, 0],
-    countries: ["ZAF", "EGY", "NGA", "KEN", "MAR"],
+    countries: ["ZA", "EG", "NG", "KE", "MA", "GH", "TZ", "ET", "CI", "CM", "SN", "AO", "DZ", "LY", "SD", "CD", "ZM", "ZW", "MZ", "MW", "UG", "MG"],
     capabilities: ["Emerging Markets", "Resource Logistics", "Port Development"],
     ports: 10,
     partners: 32,
     color: "#F59E0B",
+    position: { x: 520, y: 380 },
   },
   {
     id: "middle-east",
     name: "Middle East",
-    coordinates: [50, 25],
-    countries: ["SAU", "ARE", "QAT", "KWT", "OMN"],
+    countries: ["AE", "SA", "QA", "KW", "OM", "BH", "IL", "JO", "LB", "IQ", "IR", "SY", "YE", "TR"],
     capabilities: ["Oil & Gas Logistics", "Free Trade Zones", "Air Cargo Hub"],
     ports: 7,
     partners: 24,
     color: "#EF4444",
+    position: { x: 610, y: 280 },
   },
   {
     id: "asia",
     name: "Asia Pacific",
-    coordinates: [105, 35],
-    countries: ["CHN", "JPN", "KOR", "IND", "SGP", "THA", "VNM", "MYS"],
+    countries: ["CN", "JP", "KR", "IN", "SG", "TH", "VN", "MY", "ID", "PH", "TW", "HK", "BD", "PK", "MM", "KH", "LA", "NP", "LK", "MN", "KZ", "UZ"],
     capabilities: ["Manufacturing Hub", "Tech Supply Chain", "High-Volume Shipping"],
     ports: 25,
     partners: 89,
     color: "#06B6D4",
+    position: { x: 780, y: 260 },
   },
   {
     id: "oceania",
     name: "Oceania",
-    coordinates: [135, -25],
-    countries: ["AUS", "NZL"],
+    countries: ["AU", "NZ", "FJ", "PG", "NC"],
     capabilities: ["Trans-Pacific Routes", "Agricultural Exports", "Island Logistics"],
     ports: 6,
     partners: 18,
     color: "#EC4899",
+    position: { x: 890, y: 480 },
   },
 ];
 
-const tradeRoutes = [
-  { from: [-100, 45], to: [10, 50], name: "NA-EU" },
-  { from: [-100, 45], to: [105, 35], name: "NA-Asia" },
-  { from: [10, 50], to: [105, 35], name: "EU-Asia" },
-  { from: [10, 50], to: [50, 25], name: "EU-ME" },
-  { from: [50, 25], to: [105, 35], name: "ME-Asia" },
-  { from: [105, 35], to: [135, -25], name: "Asia-Oceania" },
-  { from: [-60, -15], to: [20, 0], name: "SA-Africa" },
-  { from: [-100, 45], to: [-60, -15], name: "NA-SA" },
-  { from: [10, 50], to: [20, 0], name: "EU-Africa" },
-];
+// Get region by country code
+const getRegionByCountry = (countryId) => {
+  return regions.find(r => r.countries.includes(countryId));
+};
 
-const RegionInfo = ({ region }) => {
-  const cardRef = useRef(null);
-
-  useEffect(() => {
-    if (region) {
-      gsap.fromTo(
-        cardRef.current,
-        { opacity: 0, x: 30, scale: 0.9 },
-        { opacity: 1, x: 0, scale: 1, duration: 0.4, ease: "power3.out" }
-      );
-    }
-  }, [region]);
-
+// Tooltip component
+const RegionTooltip = ({ region, mousePos }) => {
   if (!region) return null;
 
   return (
     <div
-      ref={cardRef}
-      className="absolute right-6 top-1/2 -translate-y-1/2 w-72 bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden z-20"
+      className="fixed z-50 w-72 bg-white rounded-xl shadow-2xl border border-gray-100 overflow-hidden pointer-events-none transform -translate-x-1/2 -translate-y-full"
+      style={{ 
+        left: mousePos.x, 
+        top: mousePos.y - 15,
+      }}
     >
-      {/* Header */}
-      <div className="p-5" style={{ backgroundColor: region.color + "15" }}>
+      <div className="p-4" style={{ backgroundColor: region.color + "15" }}>
         <div className="flex items-center gap-3">
           <div
             className="w-3 h-3 rounded-full"
             style={{ backgroundColor: region.color }}
           />
-          <h3 className="text-lg font-bold text-gray-900">{region.name}</h3>
+          <h3 className="font-bold text-gray-900 text-lg">{region.name}</h3>
         </div>
       </div>
-
-      {/* Stats */}
-      <div className="p-5 border-b border-gray-100">
-        <div className="grid grid-cols-2 gap-4">
+      <div className="p-4">
+        <div className="grid grid-cols-2 gap-4 mb-4">
           <div>
             <p className="text-2xl font-bold" style={{ color: region.color }}>
               {region.ports}
@@ -145,21 +121,11 @@ const RegionInfo = ({ region }) => {
             <p className="text-xs text-gray-500">Partners</p>
           </div>
         </div>
-      </div>
-
-      {/* Capabilities */}
-      <div className="p-5">
-        <p className="text-xs font-semibold text-gray-400 uppercase mb-3">
-          Capabilities
-        </p>
         <div className="space-y-2">
           {region.capabilities.map((cap, i) => (
-            <div
-              key={i}
-              className="flex items-center gap-2 text-sm text-gray-700"
-            >
+            <div key={i} className="flex items-center gap-2 text-sm text-gray-600">
               <div
-                className="w-1.5 h-1.5 rounded-full"
+                className="w-1.5 h-1.5 rounded-full shrink-0"
                 style={{ backgroundColor: region.color }}
               />
               {cap}
@@ -167,225 +133,183 @@ const RegionInfo = ({ region }) => {
           ))}
         </div>
       </div>
-
-      {/* CTA */}
-      <div className="px-5 pb-5">
-        <button
-          className="w-full py-2.5 rounded-lg text-white text-sm font-semibold transition-all duration-300 hover:opacity-90 cursor-pointer"
-          style={{ backgroundColor: region.color }}
-        >
-          Explore {region.name}
-        </button>
-      </div>
     </div>
   );
 };
 
-const MapChart = memo(({ activeRegion, setActiveRegion }) => {
-  const getRegionByCountry = (countryCode) => {
-    return regions.find((r) => r.countries.includes(countryCode));
-  };
-
-  const getCountryColor = (geo) => {
-    const countryCode = geo.properties.ISO_A3 || geo.properties.ADM0_A3;
-    const region = getRegionByCountry(countryCode);
-    
-    if (region) {
-      if (activeRegion?.id === region.id) {
-        return region.color;
-      }
-      return region.color + "40";
-    }
-    return "#E2E8F0";
-  };
-
-  return (
-    <ComposableMap
-      projection="geoMercator"
-      projectionConfig={{
-        scale: 130,
-        center: [20, 20],
-      }}
-      style={{ width: "100%", height: "100%" }}
-    >
-      {/* Trade Routes */}
-      {tradeRoutes.map((route, i) => (
-        <Line
-          key={i}
-          from={route.from}
-          to={route.to}
-          stroke={activeRegion ? "#3B82F6" : "#94A3B8"}
-          strokeWidth={activeRegion ? 1.5 : 0.8}
-          strokeLinecap="round"
-          strokeDasharray="5,5"
-          style={{
-            opacity: activeRegion ? 0.8 : 0.3,
-            transition: "all 0.3s ease",
-          }}
-        />
-      ))}
-
-      {/* Countries */}
-      <Geographies geography={geoUrl}>
-        {({ geographies }) =>
-          geographies.map((geo) => {
-            const countryCode = geo.properties.ISO_A3 || geo.properties.ADM0_A3;
-            const region = getRegionByCountry(countryCode);
-
-            return (
-              <Geography
-                key={geo.rsmKey}
-                geography={geo}
-                fill={getCountryColor(geo)}
-                stroke="#FFF"
-                strokeWidth={0.5}
-                style={{
-                  default: {
-                    outline: "none",
-                    transition: "all 0.3s ease",
-                  },
-                  hover: {
-                    fill: region ? region.color : "#CBD5E1",
-                    outline: "none",
-                    cursor: region ? "pointer" : "default",
-                  },
-                  pressed: {
-                    outline: "none",
-                  },
-                }}
-                onMouseEnter={() => {
-                  if (region) setActiveRegion(region);
-                }}
-                onMouseLeave={() => setActiveRegion(null)}
-              />
-            );
-          })
-        }
-      </Geographies>
-
-      {/* Region Markers */}
-      {regions.map((region) => (
-        <Marker
-          key={region.id}
-          coordinates={region.coordinates}
-          onMouseEnter={() => setActiveRegion(region)}
-          onMouseLeave={() => setActiveRegion(null)}
-        >
-          {/* Pulse ring */}
-          <circle
-            r={activeRegion?.id === region.id ? 12 : 8}
-            fill={region.color}
-            opacity={0.2}
-            style={{ transition: "all 0.3s ease" }}
-          />
-          {/* Main dot */}
-          <circle
-            r={activeRegion?.id === region.id ? 6 : 4}
-            fill={region.color}
-            stroke="#FFF"
-            strokeWidth={2}
-            style={{
-              cursor: "pointer",
-              transition: "all 0.3s ease",
-              filter: activeRegion?.id === region.id ? `drop-shadow(0 0 8px ${region.color})` : "none",
-            }}
-          />
-          {/* Label */}
-          {activeRegion?.id === region.id && (
-            <text
-              textAnchor="middle"
-              y={-15}
-              style={{
-                fontFamily: "system-ui",
-                fontSize: "10px",
-                fontWeight: "600",
-                fill: region.color,
-              }}
-            >
-              {region.name}
-            </text>
-          )}
-        </Marker>
-      ))}
-    </ComposableMap>
-  );
-});
-
-MapChart.displayName = "MapChart";
-
 const GlobalNetworkMap = () => {
   const [activeRegion, setActiveRegion] = useState(null);
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const sectionRef = useRef(null);
   const titleRef = useRef(null);
   const subtitleRef = useRef(null);
-  const containerRef = useRef(null);
+  const mapRef = useRef(null);
+  const mapContainerRef = useRef(null);
+  const markersRef = useRef([]);
 
+  const handleMouseMove = useCallback((e) => {
+    setMousePos({ x: e.clientX, y: e.clientY });
+  }, []);
+
+  // Handle country hover - find region and highlight
+  const handleCountryEnter = useCallback((countryId) => {
+    const region = getRegionByCountry(countryId);
+    if (region) {
+      setActiveRegion(region);
+    }
+  }, []);
+
+  const handleCountryLeave = useCallback(() => {
+    setActiveRegion(null);
+  }, []);
+
+  // Apply interactive styles to map countries
   useEffect(() => {
-    const title = titleRef.current;
-    const subtitle = subtitleRef.current;
-    const container = containerRef.current;
+    if (!mapContainerRef.current) return;
 
-    gsap.set(title, { opacity: 0, y: 40 });
-    gsap.set(subtitle, { opacity: 0, y: 30 });
-    gsap.set(container, { opacity: 0, scale: 0.95 });
+    const svg = mapContainerRef.current.querySelector('svg');
+    if (!svg) return;
 
-    const tl = gsap.timeline({
-      scrollTrigger: {
-        trigger: sectionRef.current,
-        start: "top 75%",
-        toggleActions: "play none none reverse",
-      },
+    // Get all path elements (countries)
+    const paths = svg.querySelectorAll('path');
+    
+    paths.forEach(path => {
+      const countryId = path.getAttribute('id');
+      
+      // Style the path
+      path.style.fill = '#cbd5e1';
+      path.style.stroke = '#94a3b8';
+      path.style.strokeWidth = '0.5';
+      path.style.transition = 'fill 0.3s ease, transform 0.2s ease';
+      path.style.cursor = 'pointer';
+      
+      // Check if this country belongs to a region
+      const region = getRegionByCountry(countryId);
+      
+      if (region) {
+        path.addEventListener('mouseenter', () => {
+          // Highlight all countries in this region
+          region.countries.forEach(id => {
+            const countryPath = svg.querySelector(`#${id}`);
+            if (countryPath) {
+              countryPath.style.fill = region.color;
+            }
+          });
+          handleCountryEnter(countryId);
+        });
+        
+        path.addEventListener('mouseleave', () => {
+          // Reset all countries in this region
+          region.countries.forEach(id => {
+            const countryPath = svg.querySelector(`#${id}`);
+            if (countryPath) {
+              countryPath.style.fill = '#cbd5e1';
+            }
+          });
+          handleCountryLeave();
+        });
+      }
     });
 
-    tl.to(title, {
-      opacity: 1,
-      y: 0,
-      duration: 0.8,
-      ease: "power3.out",
-    })
-      .to(
-        subtitle,
+    // Cleanup
+    return () => {
+      paths.forEach(path => {
+        path.replaceWith(path.cloneNode(true));
+      });
+    };
+  }, [handleCountryEnter, handleCountryLeave]);
+
+  // GSAP animations
+  useEffect(() => {
+    const ctx = gsap.context(() => {
+      // Title animation
+      gsap.fromTo(
+        titleRef.current,
+        { opacity: 0, y: 40 },
+        {
+          opacity: 1,
+          y: 0,
+          duration: 0.8,
+          ease: "power3.out",
+          scrollTrigger: {
+            trigger: sectionRef.current,
+            start: "top 75%",
+            toggleActions: "play none none reverse",
+          },
+        }
+      );
+
+      // Subtitle animation
+      gsap.fromTo(
+        subtitleRef.current,
+        { opacity: 0, y: 30 },
         {
           opacity: 1,
           y: 0,
           duration: 0.6,
+          delay: 0.2,
           ease: "power3.out",
-        },
-        "-=0.5"
-      )
-      .to(
-        container,
-        {
-          opacity: 1,
-          scale: 1,
-          duration: 0.8,
-          ease: "power3.out",
-        },
-        "-=0.4"
+          scrollTrigger: {
+            trigger: sectionRef.current,
+            start: "top 75%",
+            toggleActions: "play none none reverse",
+          },
+        }
       );
 
-    return () => {
-      ScrollTrigger.getAll().forEach((trigger) => trigger.kill());
-    };
+      // Map container animation
+      gsap.fromTo(
+        mapRef.current,
+        { opacity: 0, y: 30 },
+        {
+          opacity: 1,
+          y: 0,
+          duration: 1,
+          delay: 0.3,
+          ease: "power2.out",
+          scrollTrigger: {
+            trigger: sectionRef.current,
+            start: "top 75%",
+            toggleActions: "play none none reverse",
+          },
+        }
+      );
+
+      // Animate markers with stagger
+      markersRef.current.forEach((marker, i) => {
+        if (marker) {
+          gsap.fromTo(
+            marker,
+            { scale: 0, opacity: 0 },
+            {
+              scale: 1,
+              opacity: 1,
+              duration: 0.5,
+              delay: 0.8 + i * 0.1,
+              ease: "back.out(1.7)",
+              transformOrigin: "center center",
+              scrollTrigger: {
+                trigger: sectionRef.current,
+                start: "top 75%",
+                toggleActions: "play none none reverse",
+              },
+            }
+          );
+        }
+      });
+    }, sectionRef);
+
+    return () => ctx.revert();
   }, []);
 
   return (
-    <section
-      ref={sectionRef}
-      className="relative py-24 bg-gray-50 overflow-hidden"
-    >
-      {/* Background decorations */}
-      <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-20 left-20 w-64 h-64 bg-blue-500/5 rounded-full blur-3xl" />
-        <div className="absolute bottom-20 right-20 w-80 h-80 bg-purple-500/5 rounded-full blur-3xl" />
-      </div>
-
-      <div className="relative max-w-7xl mx-auto px-6 lg:px-8">
+    <section ref={sectionRef} className="relative py-20 md:py-28 bg-gray-50 overflow-hidden">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
-        <div className="text-center mb-12">
+        <div className="text-center mb-10 md:mb-14">
           <h2
             ref={titleRef}
-            className="text-4xl md:text-5xl font-bold text-gray-900 mb-4"
+            className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-4"
           >
             Our Global Network
           </h2>
@@ -399,68 +323,181 @@ const GlobalNetworkMap = () => {
         </div>
 
         {/* Map Container */}
-        <div
-          ref={containerRef}
-          className="relative bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden"
-          style={{ height: "550px" }}
+        <div 
+          ref={mapRef} 
+          className="relative bg-linear-to-b from-slate-100 to-white rounded-3xl p-4 md:p-8 border border-gray-100 shadow-sm"
+          onMouseMove={handleMouseMove}
         >
-          {/* Map */}
-          <div className="absolute inset-0">
-            <MapChart
-              activeRegion={activeRegion}
-              setActiveRegion={setActiveRegion}
-            />
+          {/* SVG Container with World Map and Overlays */}
+          <div className="relative w-full" style={{ aspectRatio: "1009.6727 / 665.963" }}>
+            {/* Base World Map */}
+            <div 
+              ref={mapContainerRef}
+              className="absolute inset-0 w-full h-full [&_svg]:w-full [&_svg]:h-full"
+            >
+              <WorldMapSVG />
+            </div>
+
+            {/* Region Markers Overlay */}
+            <svg 
+              viewBox="0 0 1009.6727 665.96301" 
+              className="absolute inset-0 w-full h-full"
+              style={{ zIndex: 20 }}
+            >
+              <defs>
+                <filter id="markerGlow" x="-100%" y="-100%" width="300%" height="300%">
+                  <feGaussianBlur stdDeviation="2" result="blur"/>
+                  <feMerge>
+                    <feMergeNode in="blur"/>
+                    <feMergeNode in="SourceGraphic"/>
+                  </feMerge>
+                </filter>
+              </defs>
+
+              {regions.map((region, i) => {
+                const isActive = activeRegion?.id === region.id;
+                return (
+                  <g
+                    key={region.id}
+                    ref={(el) => (markersRef.current[i] = el)}
+                    className="cursor-pointer"
+                    onMouseEnter={() => setActiveRegion(region)}
+                    onMouseLeave={() => setActiveRegion(null)}
+                    style={{ pointerEvents: "auto" }}
+                  >
+                    {/* Outer pulse ring */}
+                    <circle
+                      cx={region.position.x}
+                      cy={region.position.y}
+                      r={isActive ? 25 : 18}
+                      fill={region.color}
+                      opacity={0.15}
+                      className="transition-all duration-300"
+                    >
+                      <animate
+                        attributeName="r"
+                        values={isActive ? "25;35;25" : "18;25;18"}
+                        dur="2s"
+                        repeatCount="indefinite"
+                      />
+                      <animate
+                        attributeName="opacity"
+                        values="0.2;0.05;0.2"
+                        dur="2s"
+                        repeatCount="indefinite"
+                      />
+                    </circle>
+                    
+                    {/* Inner pulse ring */}
+                    <circle
+                      cx={region.position.x}
+                      cy={region.position.y}
+                      r={isActive ? 16 : 12}
+                      fill={region.color}
+                      opacity={0.25}
+                      className="transition-all duration-300"
+                    >
+                      <animate
+                        attributeName="r"
+                        values={isActive ? "16;22;16" : "12;16;12"}
+                        dur="2s"
+                        repeatCount="indefinite"
+                        begin="0.5s"
+                      />
+                      <animate
+                        attributeName="opacity"
+                        values="0.3;0.1;0.3"
+                        dur="2s"
+                        repeatCount="indefinite"
+                        begin="0.5s"
+                      />
+                    </circle>
+                    
+                    {/* Main marker dot */}
+                    <circle
+                      cx={region.position.x}
+                      cy={region.position.y}
+                      r={isActive ? 10 : 8}
+                      fill={region.color}
+                      stroke="#fff"
+                      strokeWidth={3}
+                      filter={isActive ? "url(#markerGlow)" : "none"}
+                      className="transition-all duration-300"
+                    />
+
+                    {/* Region label background */}
+                    <rect
+                      x={region.position.x - 55}
+                      y={region.position.y + (isActive ? 18 : 15)}
+                      width={110}
+                      height={24}
+                      rx={12}
+                      fill={isActive ? region.color : "white"}
+                      stroke={isActive ? region.color : "#e2e8f0"}
+                      strokeWidth={1}
+                      opacity={isActive ? 1 : 0.9}
+                      className="transition-all duration-300"
+                    />
+
+                    {/* Region label text */}
+                    <text
+                      x={region.position.x}
+                      y={region.position.y + (isActive ? 35 : 32)}
+                      textAnchor="middle"
+                      fill={isActive ? "#fff" : "#475569"}
+                      fontSize={isActive ? "13" : "12"}
+                      fontWeight={isActive ? "600" : "500"}
+                      className="transition-all duration-300 pointer-events-none select-none"
+                      style={{ fontFamily: "system-ui, sans-serif" }}
+                    >
+                      {region.name}
+                    </text>
+                  </g>
+                );
+              })}
+            </svg>
           </div>
 
-          {/* Region info card */}
-          <RegionInfo region={activeRegion} />
+          {/* Tooltip */}
+          <RegionTooltip region={activeRegion} mousePos={mousePos} />
 
           {/* Legend */}
-          <div className="absolute bottom-6 left-6 flex items-center gap-6 bg-white/90 backdrop-blur-sm rounded-full px-5 py-3 shadow-lg border border-gray-100">
-            <div className="flex items-center gap-2">
+          <div className="flex flex-wrap justify-center gap-3 md:gap-5 mt-8">
+            <div className="flex items-center gap-2.5 px-4 py-2 bg-white rounded-full text-sm text-gray-600 border border-gray-200 shadow-sm">
               <div className="w-3 h-3 rounded-full bg-blue-500" />
-              <span className="text-xs text-gray-600">Regional Hubs</span>
+              <span>Regional Hubs</span>
             </div>
-            <div className="flex items-center gap-2">
-              <div
-                className="w-8 h-0.5"
-                style={{
-                  backgroundImage:
-                    "repeating-linear-gradient(90deg, #94A3B8 0px, #94A3B8 4px, transparent 4px, transparent 8px)",
-                }}
-              />
-              <span className="text-xs text-gray-600">Trade Routes</span>
+            <div className="flex items-center gap-2.5 px-4 py-2 bg-white rounded-full text-sm text-gray-600 border border-gray-200 shadow-sm">
+              <div className="w-3 h-3 bg-slate-300 border border-slate-400 rounded-sm" />
+              <span>Coverage Areas</span>
             </div>
           </div>
 
           {/* Hover instruction */}
-          <div
-            className={`absolute top-6 left-1/2 -translate-x-1/2 bg-gray-900/80 backdrop-blur-sm text-white text-sm px-4 py-2 rounded-full transition-all duration-500 ${
-              activeRegion
-                ? "opacity-0 -translate-y-4"
-                : "opacity-100 translate-y-0"
-            }`}
-          >
-            Hover over a region to explore capabilities
-          </div>
+          <p className="text-center text-gray-400 text-sm mt-5">
+            Hover over countries or regional markers to explore our global capabilities
+          </p>
         </div>
 
         {/* Bottom stats */}
-        <div className="mt-12 grid grid-cols-2 md:grid-cols-4 gap-6">
+        <div className="mt-14 grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
           {[
-            { value: "50+", label: "Countries", color: "#3B82F6" },
-            { value: "86", label: "Active Ports", color: "#10B981" },
-            { value: "303", label: "Global Partners", color: "#8B5CF6" },
-            { value: "24/7", label: "Operations", color: "#F59E0B" },
+            { icon: TbWorld, value: "50+", label: "Countries", color: "#3B82F6" },
+            { icon: TbAnchor, value: "86", label: "Active Ports", color: "#10B981" },
+            { icon: TbUsers, value: "303", label: "Global Partners", color: "#8B5CF6" },
+            { icon: TbMapPin, value: "24/7", label: "Operations", color: "#F59E0B" },
           ].map((stat, i) => (
             <div
               key={i}
-              className="text-center p-6 bg-white rounded-2xl shadow-sm border border-gray-100"
+              className="text-center p-5 md:p-6 bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow duration-300"
             >
-              <p
-                className="text-3xl font-bold mb-1"
-                style={{ color: stat.color }}
+              <div
+                className="w-12 h-12 mx-auto mb-3 rounded-xl flex items-center justify-center"
+                style={{ backgroundColor: stat.color + "15" }}
               >
+                <stat.icon className="w-6 h-6" style={{ color: stat.color }} />
+              </div>
+              <p className="text-2xl md:text-3xl font-bold mb-1" style={{ color: stat.color }}>
                 {stat.value}
               </p>
               <p className="text-sm text-gray-500">{stat.label}</p>
