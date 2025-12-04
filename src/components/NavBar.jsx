@@ -6,7 +6,7 @@ import {
   TbHome, 
   TbInfoCircle, 
   TbSettings, 
-  TbBuildingFactory2, 
+  TbWorld, 
   TbNews, 
   TbBriefcase,
   TbPhone,
@@ -20,7 +20,7 @@ const navItems = [
   { name: "Home", path: "/", icon: TbHome },
   { name: "About Us", path: "/about-us", icon: TbInfoCircle },
   { name: "Services", path: "/services", icon: TbSettings },
-  { name: "Industries", path: "/industries-we-serve", icon: TbBuildingFactory2 },
+  { name: "Network", path: "/network-offices", icon: TbWorld },
   { name: "News", path: "/news-and-insights", icon: TbNews },
   { name: "Career", path: "/career", icon: TbBriefcase },
 ];
