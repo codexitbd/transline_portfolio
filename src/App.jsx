@@ -9,6 +9,12 @@ import NewsAndInsights from "./pages/NewsAndInsights";
 import Career from "./pages/Career";
 import ContactUs from "./pages/ContactUs";
 
+// Service Detail Pages
+import FreightForwarding from "./pages/services/FreightForwarding";
+import WarehousingCFS from "./pages/services/WarehousingCFS";
+import CustomsBrokerage from "./pages/services/CustomsBrokerage";
+import SupplyChainManagement from "./pages/services/SupplyChainManagement";
+
 function App() {
   return (
     <>
@@ -17,6 +23,10 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/about-us" element={<AboutUs />} />
         <Route path="/services" element={<Services />} />
+        <Route path="/services/freight-forwarding" element={<FreightForwarding />} />
+        <Route path="/services/warehousing" element={<WarehousingCFS />} />
+        <Route path="/services/customs-brokerage" element={<CustomsBrokerage />} />
+        <Route path="/services/supply-chain" element={<SupplyChainManagement />} />
         <Route path="/industries-we-serve" element={<IndustriesWeServe />} />
         <Route path="/news-and-insights" element={<NewsAndInsights />} />
         <Route path="/career" element={<Career />} />
