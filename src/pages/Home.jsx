@@ -2,6 +2,10 @@ import AnimatedCarousel from '../components/AnimatedCarousel'
 import CoreServices from '../components/CoreServices'
 import KeyFacts from '../components/KeyFacts'
 import GlobalNetworkMap from '../components/GlobalNetworkMap'
+import Testimonials from '../components/Testimonials'
+import TrustedBy from '../components/TrustedBy'
+import LatestNews from '../components/LatestNews'
+import CTASection from '../components/CTASection'
 import hero1 from '../assets/hero-1.webp'
 import hero2 from '../assets/hero-2.webp'
 import hero3 from '../assets/hero-3.webp'
@@ -37,6 +41,10 @@ const Home = () => {
         <CoreServices />
         <KeyFacts />
         <GlobalNetworkMap />
+        <Testimonials />
+        <TrustedBy />
+        <LatestNews />
+        <CTASection />
     </div>
   )
 }
